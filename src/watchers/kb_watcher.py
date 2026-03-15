@@ -8,7 +8,7 @@ from typing import Any
 
 try:
     from watchdog.events import FileSystemEvent, FileSystemEventHandler
-    from watchdog.observers import Observer
+    from watchdog.observers.polling import PollingObserver as Observer
 except ImportError:
     class FileSystemEvent:  # type: ignore[no-redef]
         def __init__(self, src_path: str = "", is_directory: bool = False):
@@ -151,7 +151,7 @@ class KBWatcher:
         if Observer is None:
             raise RuntimeError("watchdog is required to run the watcher")
         handler = KBEventHandler(self)
-        observer = Observer()
+        observer = Observer(timeout=1.0)  # 1 second polling for reliable detection
         observer.schedule(handler, str(self.settings.kb_dir), recursive=True)
         observer.start()
         self.observer = observer
