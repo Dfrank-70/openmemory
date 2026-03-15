@@ -151,7 +151,7 @@ class KBWatcher:
         if Observer is None:
             raise RuntimeError("watchdog is required to run the watcher")
         handler = KBEventHandler(self)
-        observer = Observer(timeout=1.0)  # 1 second polling for reliable detection
+        observer = Observer(timeout=10.0)  # 10 second polling - efficient for Obsidian use case
         observer.schedule(handler, str(self.settings.kb_dir), recursive=True)
         observer.start()
         self.observer = observer
