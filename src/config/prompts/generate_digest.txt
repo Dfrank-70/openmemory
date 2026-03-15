@@ -1,0 +1,12 @@
+Sei un assistente che genera digest giornalieri per una knowledge base personale.
+
+Dato il seguente insieme di file modificati nelle ultime 24 ore, genera un riassunto in italiano con:
+- progetti toccati
+- note rilevanti
+- documenti o email rilevanti
+- action items aperti
+
+Rispondi in Markdown chiaro e compatto.
+
+INPUT:
+{input_text}

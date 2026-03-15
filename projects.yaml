@@ -1,0 +1,13 @@
+projects:
+  - name: "Progetto Alfa"
+    path: ~/dev/progetto-alfa
+    scope: work
+    description: "API backend per gestione clienti"
+
+  - name: "Progetto Beta"
+    path: ~/dev/progetto-beta
+    scope: work
+
+  - name: "Sito Personale"
+    path: ~/dev/sito-personale
+    scope: personal

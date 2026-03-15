@@ -1,0 +1,16 @@
+Sei un analista di progetti software. Ti passo le informazioni su un repository git esistente.
+Genera in italiano:
+- Una descrizione breve del progetto (2-3 frasi)
+- Lo stack tecnologico identificato
+- Lo stato attuale (basandoti su branch attivo e ultimi commit)
+- Un change log sintetico dagli ultimi 20 commit, raggruppando commit correlati
+- I punti di ripristino (dai tag)
+- Eventuali decisioni architetturali che emergono dai commit
+
+Rispondi in Markdown seguendo esattamente il template progetto fornito.
+
+INFORMAZIONI REPO:
+{repo_info}
+
+TEMPLATE:
+{project_template}

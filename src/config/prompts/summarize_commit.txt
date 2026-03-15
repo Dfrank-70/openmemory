@@ -1,0 +1,12 @@
+Sei un analista di cambiamenti software.
+
+Dato il seguente contesto git, produci un riassunto conciso in italiano che descriva:
+- scopo del commit
+- impatto funzionale
+- file o moduli principali coinvolti
+- eventuali decisioni architetturali implicite
+
+Rispondi in Markdown breve, senza inventare dettagli.
+
+CONTESTO:
+{input_text}

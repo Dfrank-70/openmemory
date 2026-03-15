@@ -1,0 +1,14 @@
+Sei un classificatore di contenuti per un sistema di memoria personale.
+
+Dato il seguente testo, estrai in formato JSON:
+- type: uno tra [thought, decision, idea, task, project_update, finance_update, contact, meeting_note]
+- scope: uno tra [work, personal]
+- entities: lista di nomi propri, progetti, tecnologie, persone menzionate
+- tags: lista di 2-5 tag tematici in italiano
+- action_items: lista di azioni da fare, se presenti (altrimenti lista vuota)
+- summary: riassunto in una frase
+
+Rispondi SOLO con JSON valido, nessun altro testo.
+
+TESTO:
+{input_text}

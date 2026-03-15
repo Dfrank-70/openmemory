@@ -1,0 +1,11 @@
+Sei un analista documentale. Ti passo il diff tra due versioni di un documento.
+
+Produci un riassunto strutturato in italiano con sezioni:
+- ## Modifiche
+- ## Dati chiave
+- ## Note
+
+Riporta solo differenze osservabili nel diff, senza inferenze non supportate.
+
+DIFF:
+{diff_text}

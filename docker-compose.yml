@@ -1,0 +1,48 @@
+services:
+  chromadb:
+    image: chromadb/chroma:latest
+    container_name: open-memory-chromadb
+    ports:
+      - "8100:8000"
+    volumes:
+      - ./chroma-data:/chroma/chroma
+
+  mcp-work:
+    build:
+      context: .
+      dockerfile: src/mcp_server/Dockerfile
+    container_name: open-memory-mcp-work
+    depends_on:
+      - chromadb
+    env_file:
+      - .env
+    environment:
+      CHROMA_HOST: chromadb
+      CHROMA_PORT: 8000
+      OPEN_MEMORY_PROFILE: work
+      OPEN_MEMORY_MCP_PORT: 8000
+    ports:
+      - "8002:8000"
+    volumes:
+      - ./kb:/app/kb:ro
+      - ./logs:/app/logs
+
+  mcp-full:
+    build:
+      context: .
+      dockerfile: src/mcp_server/Dockerfile
+    container_name: open-memory-mcp-full
+    depends_on:
+      - chromadb
+    env_file:
+      - .env
+    environment:
+      CHROMA_HOST: chromadb
+      CHROMA_PORT: 8000
+      OPEN_MEMORY_PROFILE: full
+      OPEN_MEMORY_MCP_PORT: 8001
+    ports:
+      - "8001:8001"
+    volumes:
+      - ./kb:/app/kb:ro
+      - ./logs:/app/logs
