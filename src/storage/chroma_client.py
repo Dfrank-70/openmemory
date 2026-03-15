@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import hashlib
 import json
 from pathlib import Path
 from typing import Any
@@ -43,11 +42,20 @@ class OpenMemoryChromaClient:
                 normalized[key] = json.dumps(value, ensure_ascii=False)
         return normalized
 
+    def _document_id(self, path: Path, metadata: dict[str, Any]) -> str:
+        metadata_path = metadata.get("path")
+        if metadata_path:
+            return str(metadata_path)
+        try:
+            return str(path.resolve().relative_to(self.settings.open_memory_home.resolve()))
+        except Exception:
+            return str(path)
+
     def upsert_document(self, path: Path, text: str, metadata: dict[str, Any]) -> bool:
         collection = self._ensure_collection()
         if collection is None:
             return False
-        doc_id = hashlib.sha256(f"{path}:{metadata.get('content_hash', '')}".encode("utf-8")).hexdigest()
+        doc_id = self._document_id(path, metadata)
         embedding = embed_text(text)
         if not embedding:
             self.logger.warning("embedding_unavailable_skip_index path=%s", path)
@@ -62,6 +70,17 @@ class OpenMemoryChromaClient:
             return True
         except Exception as exc:
             self.logger.warning("chroma_upsert_failed path=%s error=%s", path, exc)
+            return False
+
+    def delete_document(self, document_id: str) -> bool:
+        collection = self._ensure_collection()
+        if collection is None:
+            return False
+        try:
+            collection.delete(ids=[document_id])
+            return True
+        except Exception as exc:
+            self.logger.warning("chroma_delete_failed id=%s error=%s", document_id, exc)
             return False
 
     def search(self, query: str, scope: str = "all", item_type: str = "all", limit: int = 10) -> list[dict[str, Any]]:

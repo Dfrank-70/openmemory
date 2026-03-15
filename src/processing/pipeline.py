@@ -27,6 +27,39 @@ def compute_content_hash(text: str) -> str:
     return hashlib.sha256(text.strip().encode("utf-8")).hexdigest()
 
 
+def processed_marker_path(path: Path) -> Path:
+    return path.with_name(f"{path.name}.processed")
+
+
+def touch_processed_marker(path: Path) -> Path:
+    marker = processed_marker_path(path)
+    marker.write_text("", encoding="utf-8")
+    return marker
+
+
+def has_recent_processed_marker(path: Path, max_age_seconds: int = 10) -> bool:
+    marker = processed_marker_path(path)
+    if not marker.exists():
+        return False
+    marker_age = datetime.now().timestamp() - marker.stat().st_mtime
+    marker.unlink(missing_ok=True)
+    return marker_age <= max_age_seconds
+
+
+def extract_frontmatter(markdown_text: str) -> tuple[dict[str, Any], str]:
+    if not markdown_text.startswith("---\n"):
+        return {}, markdown_text
+    parts = markdown_text.split("\n---\n", 1)
+    if len(parts) != 2:
+        return {}, markdown_text
+    frontmatter_text = parts[0].removeprefix("---\n")
+    body = parts[1]
+    metadata = yaml.safe_load(frontmatter_text) or {}
+    if not isinstance(metadata, dict):
+        metadata = {}
+    return metadata, body
+
+
 def _extract_content_hash(path: Path) -> str | None:
     try:
         text = path.read_text(encoding="utf-8")
@@ -146,6 +179,7 @@ def ingest_text_content(
         extra_metadata=extra_metadata,
     )
     path.write_text(markdown, encoding="utf-8")
+    touch_processed_marker(path)
 
     metadata = {
         "path": str(path.relative_to(get_settings().open_memory_home)),

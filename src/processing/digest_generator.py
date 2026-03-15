@@ -6,6 +6,7 @@ from pathlib import Path
 
 from src.config.settings import get_logger, get_settings, iso_now, iter_markdown_files, load_prompt, slugify
 from src.processing.openrouter_client import call_openrouter
+from src.processing.pipeline import touch_processed_marker
 from src.storage.chroma_client import get_chroma_client
 from src.storage.git_ops import get_git_ops
 
@@ -98,6 +99,7 @@ def regenerate_index() -> Path:
     )
     index_path = settings.kb_dir / "index.md"
     index_path.write_text(index_content, encoding="utf-8")
+    touch_processed_marker(index_path)
     get_chroma_client().upsert_document(
         path=index_path,
         text=index_content,
@@ -133,6 +135,7 @@ def generate_daily_digest(target_date: datetime | None = None) -> Path | None:
         ]
     )
     digest_path.write_text(frontmatter + summary.strip() + "\n", encoding="utf-8")
+    touch_processed_marker(digest_path)
     get_chroma_client().upsert_document(
         path=digest_path,
         text=digest_path.read_text(encoding="utf-8"),

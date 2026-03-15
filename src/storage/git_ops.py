@@ -26,13 +26,18 @@ class GitOperations:
             return
         self._run("init")
 
+    def _to_relative_path(self, path: Path) -> str:
+        resolved_repo_root = self.repo_root.resolve()
+        resolved_path = path.expanduser().resolve(strict=False)
+        return str(resolved_path.relative_to(resolved_repo_root))
+
     def commit_paths(self, paths: list[Path], message: str) -> bool:
         self.ensure_repository()
-        relative_paths = [str(path.resolve().relative_to(self.repo_root.resolve())) for path in paths if path.exists()]
+        relative_paths = [self._to_relative_path(path) for path in paths]
         if not relative_paths:
             return False
         try:
-            self._run("add", *relative_paths)
+            self._run("add", "-A", "--", *relative_paths)
             diff = self._run("diff", "--cached", "--quiet", check=False)
             if diff.returncode == 0:
                 return False

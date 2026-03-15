@@ -6,6 +6,7 @@ from pathlib import Path
 
 from src.config.settings import get_logger, get_settings, slugify
 from src.processing.openrouter_client import call_openrouter
+from src.processing.pipeline import touch_processed_marker
 from src.storage.chroma_client import get_chroma_client
 from src.storage.git_ops import get_git_ops
 
@@ -53,6 +54,7 @@ def append_commit_summary(repo_path: str | Path) -> Path | None:
     else:
         content += f"\n## Change Log\n{addition}\n"
     project_file.write_text(content, encoding="utf-8")
+    touch_processed_marker(project_file)
     get_chroma_client().upsert_document(
         path=project_file,
         text=content,

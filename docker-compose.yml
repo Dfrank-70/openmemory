@@ -46,3 +46,20 @@ services:
     volumes:
       - ./kb:/app/kb:ro
       - ./logs:/app/logs
+
+  kb-watcher:
+    build:
+      context: .
+      dockerfile: Dockerfile.watcher
+    container_name: open-memory-kb-watcher
+    depends_on:
+      - chromadb
+    env_file:
+      - .env
+    environment:
+      CHROMA_HOST: chromadb
+      CHROMA_PORT: 8000
+      OPEN_MEMORY_HOME: /app
+    volumes:
+      - .:/app
+    restart: unless-stopped

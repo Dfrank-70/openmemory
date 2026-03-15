@@ -7,7 +7,7 @@ import sys
 from pathlib import Path
 
 from src.config.settings import get_logger, get_settings, iso_now, slugify
-from src.processing.pipeline import compute_content_hash
+from src.processing.pipeline import compute_content_hash, touch_processed_marker
 from src.storage.chroma_client import get_chroma_client
 from src.storage.git_ops import get_git_ops
 
@@ -142,6 +142,7 @@ def register_project(name: str, repo_path: str, scope: str = "work") -> Path:
     target_path = target_dir / f"{slugify(name)}.md"
     markdown = _project_markdown(name=name, repo_path=repo, scope=scope)
     target_path.write_text(markdown, encoding="utf-8")
+    touch_processed_marker(target_path)
     install_hook(repo)
     get_chroma_client().upsert_document(
         path=target_path,
