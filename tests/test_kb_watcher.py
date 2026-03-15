@@ -1,3 +1,5 @@
+import time
+
 from src.watchers.kb_watcher import KBWatcher
 
 
@@ -97,3 +99,27 @@ def test_marker_skips_recent_files(tmp_path, monkeypatch):
 
     assert not watcher.process_upsert(note_path)
     assert chroma.upserts == []
+
+
+def test_debounce_processes_file_once(tmp_path, monkeypatch):
+    kb_dir = tmp_path / "kb"
+    notes_dir = kb_dir / "work" / "notes"
+    notes_dir.mkdir(parents=True)
+    note_path = notes_dir / "nota.md"
+    note_path.write_text("---\nscope: work\ntype: note\n---\n\nContenuto\n", encoding="utf-8")
+
+    settings = type("Settings", (), {"open_memory_home": tmp_path, "kb_dir": kb_dir})()
+    chroma = DummyChroma()
+    git = DummyGit()
+    monkeypatch.setattr("src.watchers.kb_watcher.get_settings", lambda: settings)
+    monkeypatch.setattr("src.watchers.kb_watcher.get_logger", lambda name: _logger())
+    watcher = KBWatcher(chroma_client=chroma, git_ops=git, debounce_seconds=0.1)
+
+    watcher.schedule(note_path, "upsert")
+    watcher.schedule(note_path, "upsert")
+    watcher.schedule(note_path, "upsert")
+
+    time.sleep(0.5)
+
+    assert len(chroma.upserts) == 1
+    assert len(git.commits) == 1
