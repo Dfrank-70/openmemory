@@ -6,6 +6,8 @@ import time
 from pathlib import Path
 from typing import Any
 
+import yaml
+
 try:
     from watchdog.events import FileSystemEvent, FileSystemEventHandler
     from watchdog.observers.polling import PollingObserver as Observer
@@ -21,7 +23,8 @@ except ImportError:
     Observer = None  # type: ignore[assignment,misc]
 
 from src.config.settings import get_logger, get_settings
-from src.processing.pipeline import compute_content_hash, extract_frontmatter, has_recent_processed_marker
+from src.processing.classifier import classify_text
+from src.processing.pipeline import compute_content_hash, extract_frontmatter, has_recent_processed_marker, touch_processed_marker
 from src.storage.chroma_client import OpenMemoryChromaClient, get_chroma_client
 from src.storage.git_ops import GitOperations, get_git_ops
 
@@ -123,7 +126,28 @@ class KBWatcher:
         except Exception as exc:
             self.logger.warning("watcher_read_failed path=%s error=%s", path, exc)
             return False
-        frontmatter, _ = extract_frontmatter(markdown)
+        frontmatter, body = extract_frontmatter(markdown)
+        frontmatter_complete = bool(frontmatter.get("scope") and frontmatter.get("type"))
+        if not frontmatter_complete and self.settings.watcher_auto_classify and self.settings.openrouter_api_key:
+            try:
+                classification = classify_text(markdown, prompt_name="classify_note.txt")
+                enriched = {
+                    "scope": classification.scope,
+                    "type": classification.item_type,
+                    "tags": classification.tags,
+                    "entities": classification.entities,
+                    "summary": classification.summary,
+                }
+                if classification.action_items:
+                    enriched["action_items"] = classification.action_items
+                frontmatter = {**enriched, **frontmatter}
+                fm_text = yaml.safe_dump(frontmatter, sort_keys=False, allow_unicode=True).strip()
+                markdown = f"---\n{fm_text}\n---\n\n{body}"
+                path.write_text(markdown, encoding="utf-8")
+                touch_processed_marker(path)
+                self.logger.info("watcher_classified path=%s scope=%s type=%s", path, frontmatter["scope"], frontmatter["type"])
+            except Exception as exc:
+                self.logger.warning("watcher_classify_failed path=%s error=%s", path, exc)
         metadata = {
             "path": self._relative_to_home(path),
             "scope": str(frontmatter.get("scope", "all")),

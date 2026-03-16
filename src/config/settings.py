@@ -64,6 +64,7 @@ class Settings:
     imap_user: str = field(default_factory=lambda: os.getenv("IMAP_USER", "").strip())
     imap_password: str = field(default_factory=lambda: os.getenv("IMAP_PASSWORD", "").strip())
     imap_poll_interval: int = field(default_factory=lambda: int(os.getenv("IMAP_POLL_INTERVAL", "300")))
+    watcher_auto_classify: bool = field(default_factory=lambda: _bool_env("WATCHER_AUTO_CLASSIFY", False))
     kb_dir: Path = field(init=False)
     logs_dir: Path = field(init=False)
     attachments_dir: Path = field(init=False)
