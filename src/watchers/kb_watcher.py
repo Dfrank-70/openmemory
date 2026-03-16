@@ -171,6 +171,46 @@ class KBWatcher:
             self.logger.info("watcher_delete path=%s", path)
         return success
 
+    def reconcile(self) -> dict[str, int]:
+        """Compare ChromaDB with filesystem and delete orphaned documents."""
+        collection = self.chroma_client._ensure_collection()
+        if collection is None:
+            return {"deleted": 0, "errors": 0}
+        try:
+            all_docs = collection.get()
+            if not all_docs or not all_docs.get("ids"):
+                return {"deleted": 0, "errors": 0}
+            ids = all_docs["ids"]
+            metadatas = all_docs.get("metadatas", [])
+        except Exception as exc:
+            self.logger.warning("reconcile_fetch_failed error=%s", exc)
+            return {"deleted": 0, "errors": 1}
+
+        deleted_count = 0
+        error_count = 0
+        deleted_paths: list[Path] = []
+
+        for doc_id, metadata in zip(ids, metadatas or []):
+            if metadata is None:
+                metadata = {}
+            path_str = metadata.get("path") or doc_id
+            full_path = self.settings.open_memory_home / path_str
+            if not full_path.exists() and not self.should_ignore(path_str):
+                try:
+                    collection.delete(ids=[doc_id])
+                    deleted_paths.append(Path(path_str))
+                    deleted_count += 1
+                    self.logger.info("reconcile_deleted path=%s", path_str)
+                except Exception as exc:
+                    self.logger.warning("reconcile_delete_failed path=%s error=%s", path_str, exc)
+                    error_count += 1
+
+        if deleted_paths:
+            message = f"watcher reconcile: deleted {deleted_count} orphaned documents"
+            self.git_ops.commit_paths(deleted_paths, message)
+
+        return {"deleted": deleted_count, "errors": error_count}
+
     def start(self) -> None:
         if Observer is None:
             raise RuntimeError("watchdog is required to run the watcher")
@@ -220,6 +260,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Watch kb markdown files and sync them to ChromaDB and git")
     parser.add_argument("--debounce-seconds", type=int, default=5)
     parser.add_argument("--marker-window-seconds", type=int, default=10)
+    parser.add_argument("--reconcile", action="store_true", help="One-time cleanup of orphaned ChromaDB documents and exit")
     return parser
 
 
@@ -229,6 +270,10 @@ def main(argv: list[str] | None = None) -> int:
         debounce_seconds=args.debounce_seconds,
         marker_window_seconds=args.marker_window_seconds,
     )
+    if args.reconcile:
+        result = watcher.reconcile()
+        print(f"Reconcile complete: {result['deleted']} deleted, {result['errors']} errors")
+        return 0 if result["errors"] == 0 else 1
     watcher.run_forever()
     return 0
 
