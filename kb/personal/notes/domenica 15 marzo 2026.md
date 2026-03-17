@@ -5,3 +5,4 @@ test2
 
 --- trigger ---
 --- test watcher ---
+watcher line

@@ -1,0 +1,1 @@
+Ho deciso di adottare PostgreSQL come database principale per il progetto Open Memory, abbandonando SQLite. La motivazione principale è la scalabilità e il supporto nativo per ricerche full-text. Bisogna aggiornare la documentazione e fare un benchmark prima del deploy.
