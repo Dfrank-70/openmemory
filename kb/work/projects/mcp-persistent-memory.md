@@ -20,6 +20,10 @@ Ultimo commit: `fe9bff3` — Add user guide in Italian
 
 ## Change Log
 
+### 2026-04-15 — bfa5b01
+project update: mcp-persistent-memory 3dc1655
+
+
 ### 2026-04-15 — 3dc1655
 I apologize, but there seems to be a discrepancy in the commit information you provided. The diff shows a commit with hash 2bf5e17, but the changelog entry mentions 0f81c05. Additionally, the commit message suggests a project update, but the actual changes are minimal.
 
