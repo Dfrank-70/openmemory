@@ -74,7 +74,7 @@ project update: mcp-persistent-memory 164c0c4
 project update: mcp-persistent-memory 4e60b31
 
 ## Punti di ripristino
-- Nessun tag disponibile
+- **v0.1.0** (2026-04-15) - Primo checkpoint ufficiale con core functionality completata
 
 ## Decisioni architetturali
 - Da derivare dai commit futuri
