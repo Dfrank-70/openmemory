@@ -19,6 +19,10 @@ Ultimo commit: `35e18fa` — project update: mcp-persistent-memory 81c8d4a
 - Docker
 
 ## Change Log
+
+### 2026-04-15 — 5352929
+register project: MCP Persistent Memory
+
 ### 35e18fa
 project update: mcp-persistent-memory 81c8d4a
 ### 81c8d4a
