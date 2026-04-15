@@ -186,3 +186,4 @@ I test includono verifiche specifiche per l'integrazione con Obsidian.
 **Test falliscono:**
 - Assicurati di aver attivato il virtualenv: `source .venv/bin/activate`
 - Verifica che tutte le dipendenze siano installate: `pip install -r requirements.txt`
+-à 
