@@ -41,6 +41,21 @@ def test_should_ignore_paths(monkeypatch, tmp_path):
     assert not watcher.should_ignore("/tmp/kb/work/notes/note.md")
 
 
+def test_obsidian_directory_is_fully_ignored(monkeypatch, tmp_path):
+    """Verifica che tutti i file .obsidian vengano ignorati."""
+    settings = type("Settings", (), {"open_memory_home": tmp_path, "kb_dir": tmp_path / "kb"})()
+    monkeypatch.setattr("src.watchers.kb_watcher.get_settings", lambda: settings)
+    monkeypatch.setattr("src.watchers.kb_watcher.get_logger", lambda name: _logger())
+    watcher = KBWatcher(chroma_client=DummyChroma(), git_ops=DummyGit())
+    
+    # Test vari file Obsidian
+    assert watcher.should_ignore("/tmp/kb/.obsidian/workspace.json")
+    assert watcher.should_ignore("/tmp/kb/.obsidian/app.json")
+    assert watcher.should_ignore("/tmp/kb/.obsidian/appearance.json")
+    assert watcher.should_ignore("/tmp/kb/.obsidian/core-plugins.json")
+    assert not watcher.should_ignore("/tmp/kb/work/notes/nota.md")
+
+
 def test_process_upsert_reads_frontmatter(tmp_path, monkeypatch):
     kb_dir = tmp_path / "kb"
     notes_dir = kb_dir / "work" / "notes"
@@ -62,6 +77,96 @@ def test_process_upsert_reads_frontmatter(tmp_path, monkeypatch):
     assert chroma.upserts[0]["metadata"]["scope"] == "work"
     assert chroma.upserts[0]["metadata"]["type"] == "decision"
     assert chroma.upserts[0]["metadata"]["entities"] == ["progetto-alfa"]
+
+
+def test_obsidian_source_metadata_preserved(tmp_path, monkeypatch):
+    """Verifica che source: obsidian nel frontmatter venga preservato in ChromaDB."""
+    kb_dir = tmp_path / "kb"
+    notes_dir = kb_dir / "work" / "notes"
+    notes_dir.mkdir(parents=True)
+    note_path = notes_dir / "obsidian_note.md"
+    note_path.write_text(
+        "---\nscope: work\ntype: note\nsource: obsidian\ntags:\n  - obsidian\n---\n\nContenuto nota Obsidian",
+        encoding="utf-8",
+    )
+
+    settings = type("Settings", (), {"open_memory_home": tmp_path, "kb_dir": kb_dir})()
+    chroma = DummyChroma()
+    git = DummyGit()
+    monkeypatch.setattr("src.watchers.kb_watcher.get_settings", lambda: settings)
+    monkeypatch.setattr("src.watchers.kb_watcher.get_logger", lambda name: _logger())
+    watcher = KBWatcher(chroma_client=chroma, git_ops=git)
+
+    assert watcher.process_upsert(note_path)
+    assert chroma.upserts[0]["metadata"]["source"] == "obsidian"
+    assert chroma.upserts[0]["metadata"]["tags"] == ["obsidian"]
+
+
+def test_obsidian_wikilinks_processing(tmp_path, monkeypatch):
+    """Verifica che i wikilinks Obsidian vengano processati correttamente."""
+    kb_dir = tmp_path / "kb"
+    notes_dir = kb_dir / "work" / "notes"
+    notes_dir.mkdir(parents=True)
+    note_path = notes_dir / "note_with_links.md"
+    note_path.write_text(
+        "---\nscope: work\n---\n\nNota con [[altra nota]] e [[progetti/alfa]]",
+        encoding="utf-8",
+    )
+
+    settings = type("Settings", (), {
+        "open_memory_home": tmp_path,
+        "kb_dir": kb_dir,
+        "watcher_auto_classify": False,
+        "openrouter_api_key": None,
+    })()
+    chroma = DummyChroma()
+    git = DummyGit()
+    monkeypatch.setattr("src.watchers.kb_watcher.get_settings", lambda: settings)
+    monkeypatch.setattr("src.watchers.kb_watcher.get_logger", lambda name: _logger())
+    watcher = KBWatcher(chroma_client=chroma, git_ops=git)
+
+    # Verifica che la nota venga processata anche con wikilinks
+    assert watcher.process_upsert(note_path)
+    # Verifica che il contenuto con wikilinks venga salvato
+    assert "[[altra nota]]" in chroma.upserts[0]["text"]
+    assert "[[progetti/alfa]]" in chroma.upserts[0]["text"]
+    # Nota: l'estrazione dei wikilinks come metadata non è ancora implementata
+    # Questo test verifica solo che i wikilinks non impediscano il processamento
+
+
+def test_obsidian_end_to_end_workflow(tmp_path, monkeypatch):
+    """Test completo del flusso Obsidian → Watcher → ChromaDB."""
+    kb_dir = tmp_path / "kb"
+    notes_dir = kb_dir / "work" / "notes"
+    notes_dir.mkdir(parents=True)
+    
+    # Simula creazione nota in Obsidian
+    note_path = notes_dir / "obsidian_test.md"
+    note_path.write_text(
+        "---\nscope: work\ntype: note\nsource: obsidian\n---\n\nNota creata in Obsidian",
+        encoding="utf-8",
+    )
+
+    settings = type("Settings", (), {
+        "open_memory_home": tmp_path,
+        "kb_dir": kb_dir,
+        "watcher_auto_classify": False,
+        "openrouter_api_key": None,
+    })()
+    chroma = DummyChroma()
+    git = DummyGit()
+    monkeypatch.setattr("src.watchers.kb_watcher.get_settings", lambda: settings)
+    monkeypatch.setattr("src.watchers.kb_watcher.get_logger", lambda name: _logger())
+    watcher = KBWatcher(chroma_client=chroma, git_ops=git)
+
+    # Processa la nota
+    assert watcher.process_upsert(note_path)
+    
+    # Verifica indicizzazione
+    assert len(chroma.upserts) == 1
+    assert chroma.upserts[0]["metadata"]["source"] == "obsidian"
+    assert chroma.upserts[0]["metadata"]["scope"] == "work"
+    assert chroma.upserts[0]["metadata"]["type"] == "note"
 
 
 def test_process_delete_uses_relative_path(tmp_path, monkeypatch):
