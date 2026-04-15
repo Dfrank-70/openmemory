@@ -19,6 +19,41 @@ Ultimo commit: `fe9bff3` — Add user guide in Italian
 - Docker
 
 ## Change Log
+
+### 2026-04-15 — 797ecb5
+This commit appears to be registering a new project called "MCP Persistent Memory" in a knowledge base tracking system. Let me break down the key details:
+
+1. Project Details:
+- Name: MCP Persistent Memory
+- Status: Active
+- Stack: Python, Docker
+- Registered Date: 2026-04-15
+- Repository Location: Personal Google Drive
+
+2. Repository Structure:
+- Contains typical Python project structure
+- Includes Docker configuration
+- Has a knowledge base (kb/) directory
+- Contains source code (src/), tests, scripts, and logs
+
+3. Recent Commits:
+- Latest commit: "Add user guide in Italian" (fe9bff3)
+- Previous commits include:
+  - Adding Obsidian integration tests
+  - Adding configuration
+  - Implementing file watcher
+  - Bootstrapping "open memory" project
+
+4. Notable Components:
+- Docker compose and Dockerfile
+- Logging system
+- File watcher
+- Classifier and embedder modules
+- Test suite
+- Setup and installation scripts
+
+The project seems to be a persistent memory management system with file watching, classification, and integration capabilities, likely using Obsidian as a note-taking platform.
+
 ### fe9bff3
 Add user guide in Italian
 ### 4ff87a4
