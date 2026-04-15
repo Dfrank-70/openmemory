@@ -20,6 +20,10 @@ Ultimo commit: `fe9bff3` — Add user guide in Italian
 
 ## Change Log
 
+### 2026-04-15 — 286f3f4
+project update: mcp-persistent-memory 09c6ed6
+
+
 ### 2026-04-15 — 09c6ed6
 project update: mcp-persistent-memory 66bb05b
 
