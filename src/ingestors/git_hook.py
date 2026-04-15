@@ -44,6 +44,16 @@ def append_commit_summary(repo_path: str | Path) -> Path | None:
     if project_file is None:
         logger.warning("project_file_not_found repo=%s", repo)
         return None
+    
+    # Prevent infinite loop: skip if project file is inside the repo being processed
+    try:
+        project_file_relative = project_file.relative_to(repo)
+        logger.info("skip_self_update repo=%s project_file=%s", repo, project_file)
+        return None
+    except ValueError:
+        # project_file is not inside repo, safe to proceed
+        pass
+    
     commit_hash = _run(repo, "log", "-1", "--format=%h")
     commit_date = _run(repo, "log", "-1", "--format=%cs")
     summary = summarize_commit(repo)
