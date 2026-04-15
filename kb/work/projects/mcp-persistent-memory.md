@@ -20,6 +20,10 @@ Ultimo commit: `fe9bff3` — Add user guide in Italian
 
 ## Change Log
 
+### 2026-04-15 — 59b97db
+project update: mcp-persistent-memory 27737f0
+
+
 ### 2026-04-15 — 27737f0
 I apologize, but the changelog entry you've added seems to be a meta-commentary about the changelog itself, rather than an actual project update. This looks like an AI-generated or placeholder text that doesn't provide meaningful information about the project changes.
 
