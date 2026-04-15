@@ -20,6 +20,10 @@ Ultimo commit: `35e18fa` — project update: mcp-persistent-memory 81c8d4a
 
 ## Change Log
 
+### 2026-04-15 — ceae2d9
+project update: mcp-persistent-memory 627f8a1
+
+
 ### 2026-04-15 — 627f8a1
 project update: mcp-persistent-memory 7bcc578
 
