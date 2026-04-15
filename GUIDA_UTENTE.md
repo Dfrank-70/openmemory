@@ -2,6 +2,101 @@
 
 Open Memory è un sistema di memoria persistente personale per agenti AI. Questa guida spiega le funzioni attualmente disponibili.
 
+## Panoramica del Progetto
+
+### Finalità Complessive
+
+Open Memory è un sistema di memoria persistente progettato per agenti AI che permette di:
+- Memorizzare e organizzare informazioni in formato Markdown compatibile con Obsidian
+- Indicizzare semanticamente i contenuti per ricerca intelligente
+- Tracciare automaticamente i commit git di progetti monitorati
+- Fornire accesso strutturato alla knowledge base tramite server MCP
+- Integrare diverse fonti di dati (note, voice, email, progetti git)
+
+### Architettura
+
+Il sistema si basa su tre componenti principali:
+
+1. **Git Repository** - Fonte di verità per tutti i dati
+   - Knowledge base in `kb/` (Markdown compatibile Obsidian)
+   - Codice sorgente e configurazione
+   - Storia completa delle modifiche
+
+2. **ChromaDB** - Indice derivato ricostruibile
+   - Embedding vettoriali per ricerca semantica
+   - Metadati strutturati per filtraggio
+   - Può essere ricostruito completamente dai file in `kb/`
+
+3. **Server MCP** - Interfaccia per agenti AI esterni
+   - Tool: search, get_project, get_context
+   - Due profili: work (localhost:8000) e full (localhost:8001)
+   - Accesso programmatico alla knowledge base
+
+### Funzionalità Implementate
+
+**Core:**
+- ✅ Ingestione note da CLI e Obsidian
+- ✅ Classificazione automatica delle note
+- ✅ Embedding e ricerca semantica con ChromaDB
+- ✅ Watcher automatico per monitoraggio file system
+- ✅ Registrazione e tracciamento progetti git
+- ✅ Git hook per aggiornamento automatico changelog
+- ✅ Server MCP con tool di ricerca e contesto
+
+**Ingestori Avanzati:**
+- ✅ Note vocali (trascrizione audio)
+- ✅ Monitor email IMAP
+- ✅ Bootstrap multi-progetti da configurazione
+
+**Utility:**
+- ✅ Script di setup automatico
+- ✅ Backup periodico via cron
+- ✅ Ricostruzione indice (rehydrate)
+- ✅ Generazione digest riassuntivi
+- ✅ Riconciliazione documenti orfani
+
+### Stato di Sviluppo
+
+**Completato:**
+- Architettura core stabile
+- Integrazione Obsidian funzionante
+- Sistema di indicizzazione affidabile
+- Server MCP operativo
+- Suite test completa
+
+**In Corso:**
+- Miglioramento integrazione Obsidian
+- Ottimizzazione performance
+
+**Future:**
+- Interfaccia web per gestione manuale
+- Supporto additional formati (PDF, DOCX)
+- Integrazione con altri servizi esterni
+
+### Limitazioni Note
+
+- Il git hook non può tracciare il repository che lo contiene (per evitare loop infiniti)
+- Dipendenza da Docker per ChromaDB
+- Richiede Python 3.12
+- Classificazione automatica richiede API key OpenRouter
+- Watcher usa polling (10 secondi) per compatibilità Obsidian
+
+### Requisiti di Sistema
+
+- **Python:** 3.12+
+- **Docker:** per ChromaDB
+- **Spazio disco:** ~1GB per modelli ML
+- **Opzionale:** OpenRouter API key per classificazione automatica
+- **Opzionale:** Obsidian per interfaccia grafica
+
+### Prossimi Passi
+
+1. Completare integrazione Obsidian (wikilinks come metadata)
+2. Sviluppare interfaccia web per gestione knowledge base
+3. Aggiungere supporto formati documenti aggiuntivi
+4. Migliorare performance indicizzazione per knowledge base large
+5. Integrazione con altri servizi di note-taking
+
 ## Funzionalità Principali
 
 ### 1. Gestione Note
